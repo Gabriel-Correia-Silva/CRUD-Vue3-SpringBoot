@@ -1,4 +1,4 @@
-# frontend
+# vue-calendar
 
 ## Project setup
 ```

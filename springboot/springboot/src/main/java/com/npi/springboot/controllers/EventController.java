@@ -6,10 +6,8 @@ import com.npi.springboot.repositories.EventRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -17,14 +15,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
-
 @RestController
 public class EventController {
 
     @Autowired
-    EventRepository eventRepository;
+    EventRepository eventRepository; // Repositório para acesso aos dados dos eventos
 
+    // Método para criar um novo evento
     @PostMapping("/event")
     public ResponseEntity<EventModel> createEvent(@RequestBody @Valid EventRecordDtos eventRecordDtos) {
         var eventModel = new EventModel();
@@ -32,34 +29,50 @@ public class EventController {
         return ResponseEntity.status(HttpStatus.CREATED).body(eventRepository.save(eventModel));
     }
 
+    // Método para obter um evento pelo nome
+    @GetMapping("/event/{name}")
+    public ResponseEntity<Object> getEventByName(@PathVariable String name) {
+        Optional<EventModel> event = Optional.ofNullable(eventRepository.findByName(name));
+        return event.<ResponseEntity<Object>>map(eventModel -> ResponseEntity.status(HttpStatus.OK).body(eventModel)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", "Evento não encontrado")));
+    }
+
+    // Método para obter todos os eventos
     @GetMapping("/event")
     public ResponseEntity<List<EventModel>> getAllEvents() {
-        return ResponseEntity.status(HttpStatus.OK).body(eventRepository.findAll());
+        List<EventModel> events = eventRepository.findAll();
+        return ResponseEntity.status(HttpStatus.OK).body(events);
     }
 
-    @GetMapping("/event/{id}")
-    public ResponseEntity<Object> getEventId(@PathVariable UUID id) {
-        Optional<EventModel> event0 = eventRepository.findById(id);
-        return event0.<ResponseEntity<Object>>map(eventModel -> ResponseEntity.status(HttpStatus.OK).body(eventModel)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", "Event not found")));
-    }
-
+    // Método para atualizar um evento
     @PutMapping("/event/{id}")
-    public ResponseEntity<Object> updateEvent(@PathVariable UUID id, @RequestBody @Valid EventRecordDtos eventRecordDtos) {
-        Optional<EventModel> event0 = eventRepository.findById(id);
-        return event0.<ResponseEntity<Object>>map(eventModel -> {
-            BeanUtils.copyProperties(eventRecordDtos, eventModel);
-            return ResponseEntity.status(HttpStatus.OK).body(eventRepository.save(eventModel));
-        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", "Event not found")));
+    public ResponseEntity<EventModel> updateEvent(@PathVariable UUID id, @RequestBody @Valid EventRecordDtos eventRecordDtos) {
+        try {
+            Optional<EventModel> optionalEvent = eventRepository.findById(id);
+            if (optionalEvent.isPresent()) {
+                EventModel eventModel = optionalEvent.get();
+                BeanUtils.copyProperties(eventRecordDtos, eventModel);
+                eventModel.setId(id);
+                return ResponseEntity.status(HttpStatus.OK).body(eventRepository.save(eventModel));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+        } catch (Exception e) {
+            // handle exception
+        }
+        return null;
     }
 
+
+
+    // Método para excluir um evento
     @DeleteMapping("/event/{id}")
     public ResponseEntity<Object> deleteEvent(@PathVariable UUID id) {
-        Optional<EventModel> event0 = eventRepository.findById(id);
-        return event0.<ResponseEntity<Object>>map(eventModel -> {
-            eventRepository.delete(eventModel);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", "Event not found")));
+        Optional<EventModel> optionalEvent = eventRepository.findById(id);
+        if (optionalEvent.isPresent()) {
+            eventRepository.deleteById(id);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", "Evento não encontrado"));
+        }
     }
-
-
 }

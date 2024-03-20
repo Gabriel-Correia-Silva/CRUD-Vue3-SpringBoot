@@ -2,7 +2,7 @@ package com.npi.springboot.models;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -15,10 +15,10 @@ public class EventModel implements Serializable{
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     private String name;
-    private Date date;
-    private String description;
-    private Date startTime;
-    private Date endTime;
+    private LocalDate start;
+    private LocalDate endDate;
+    private String details;
+    private String color;
 
     // getters and setters
 
@@ -38,35 +38,35 @@ public class EventModel implements Serializable{
         this.name = name;
     }
 
-    public Date getDate() {
-        return date;
+    public LocalDate getStart() {
+        return start;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setStart(LocalDate start) {
+        this.start = start;
     }
 
-    public String getDescription() {
-        return description;
+    public LocalDate getEndDate() {
+        return endDate;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setEnd(LocalDate endDate) {
+        this.endDate = endDate;
     }
 
-    public Date getStartTime() {
-        return startTime;
+    public String getDetails() {
+        return details;
     }
 
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
+    public void setDetails(String details) {
+        this.details = details;
     }
 
-    public Date getEndTime() {
-        return endTime;
+    public String getColor() {
+        return color;
     }
 
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
+    public void setColor(String color) {
+        this.color = color;
     }
 }
